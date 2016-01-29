@@ -1,9 +1,9 @@
 local VERSION = "1.1.0"
 local ffi = require("ffi")
-local lib, can_resize
+local lib, can_resize, can_auto_orient
 do
   local _obj_0 = require("magick.wand.lib")
-  lib, can_resize = _obj_0.lib, _obj_0.can_resize
+  lib, can_resize, can_auto_orient = _obj_0.lib, _obj_0.can_resize, _obj_0.can_auto_orient
 end
 local composite_op = {
   ["UndefinedCompositeOp"] = 0,
@@ -308,6 +308,12 @@ do
       self.pixel_wand = self.pixel_wand or ffi.gc(lib.NewPixelWand(), lib.DestroyPixelWand)
       assert(lib.MagickGetImagePixelColor(self.wand, x, y, self.pixel_wand), "failed to get pixel")
       return lib.PixelGetRed(self.pixel_wand), lib.PixelGetGreen(self.pixel_wand), lib.PixelGetBlue(self.pixel_wand), lib.PixelGetAlpha(self.pixel_wand)
+    end,
+    auto_orient = function(self)
+      if not (can_auto_orient) then
+        error("`MagickAutoOrientImage` not found. Please use 6.8.9+")
+      end
+      return lib.MagickAutoOrientImage(self.wand)
     end,
     __tostring = function(self)
       return "Image<" .. tostring(self.path) .. ", " .. tostring(self.wand) .. ">"

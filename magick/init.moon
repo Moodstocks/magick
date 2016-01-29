@@ -2,7 +2,7 @@
 VERSION = "1.1.0"
 
 ffi = require "ffi"
-import lib, can_resize from require "magick.wand.lib"
+import lib, can_resize, can_auto_orient from require "magick.wand.lib"
 
 composite_op = {
    ["UndefinedCompositeOp"]: 0,
@@ -272,6 +272,10 @@ class Image
       "failed to get pixel"
 
     lib.PixelGetRed(@pixel_wand), lib.PixelGetGreen(@pixel_wand), lib.PixelGetBlue(@pixel_wand), lib.PixelGetAlpha(@pixel_wand)
+
+  auto_orient: =>
+     error "`MagickAutoOrientImage` not found. Please use 6.8.9+" unless can_auto_orient
+     lib.MagickAutoOrientImage @wand
 
   __tostring: =>
     "Image<#{@path}, #{@wand}>"

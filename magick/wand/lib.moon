@@ -119,6 +119,29 @@ can_resize = if get_filters!
   ]]
   true
 
+get_auto_orient = ->
+  fname = "wand/magick-image.h"
+  prefixes = {
+    "/usr/include/ImageMagick"
+    "/usr/local/include/ImageMagick"
+    unpack [p for p in get_flags!\gmatch "-I([^%s]+)"]
+  }
+
+  for p in *prefixes
+    full = "#{p}/#{fname}"
+    if f = io.open full
+      content = with f\read "*a" do f\close!
+      if content\match "MagickAutoOrientImage"
+        return true
+
+  false
+
+can_auto_orient = if get_auto_orient!
+  ffi.cdef [[
+    MagickBooleanType MagickAutoOrientImage(MagickWand *wand);
+  ]]
+  true
+
 try_to_load = (...) ->
   local out
   for name in *{...}
@@ -143,4 +166,4 @@ lib = try_to_load "MagickWand", ->
 
   lname and "lib" .. lname .. suffix
 
-{ :lib, :can_resize }
+{ :lib, :can_resize, :can_auto_orient }

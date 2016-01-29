@@ -137,6 +137,48 @@ if get_filters() then
   ]])
   can_resize = true
 end
+local get_auto_orient
+get_auto_orient = function()
+  local fname = "wand/magick-image.h"
+  local prefixes = {
+    "/usr/include/ImageMagick",
+    "/usr/local/include/ImageMagick",
+    unpack((function()
+      local _accum_0 = { }
+      local _len_0 = 1
+      for p in get_flags():gmatch("-I([^%s]+)") do
+        _accum_0[_len_0] = p
+        _len_0 = _len_0 + 1
+      end
+      return _accum_0
+    end)())
+  }
+  for _index_0 = 1, #prefixes do
+    local p = prefixes[_index_0]
+    local full = tostring(p) .. "/" .. tostring(fname)
+    do
+      local f = io.open(full)
+      if f then
+        local content
+        do
+          local _with_0 = f:read("*a")
+          f:close()
+          content = _with_0
+        end
+        if content:match("MagickAutoOrientImage") then
+          return true
+        end
+      end
+    end
+  end
+  return false
+end
+local can_auto_orient
+if get_auto_orient() then
+  ffi.cdef([[    MagickBooleanType MagickAutoOrientImage(MagickWand *wand);
+  ]])
+  can_auto_orient = true
+end
 local try_to_load
 try_to_load = function(...)
   local out
@@ -181,5 +223,6 @@ local lib = try_to_load("MagickWand", function()
 end)
 return {
   lib = lib,
-  can_resize = can_resize
+  can_resize = can_resize,
+  can_auto_orient = can_auto_orient
 }
